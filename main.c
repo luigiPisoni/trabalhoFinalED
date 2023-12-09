@@ -39,85 +39,32 @@ void initList(List* l) {
     l->tail = NULL;
 }
 
-void printList(List* l) {
+void printSingle(Node* node) {
+    printf("\tCodigo: %d\n", node->producao.codigo);
+    printf("\tData: %d/%d/%d\n",
+        node->producao.dataProducao.dia,
+        node->producao.dataProducao.mes,
+        node->producao.dataProducao.ano);
+    printf("\tDuracao: %.2f\n", node->producao.duracao);
+    printf("\tN de Fardos: %d\n", node->producao.qtDeFardos);
+    printf("\tCultivar: %s\n", node->producao.tipoDeFardo.cultivar);
+    printf("\tDiametro: %d\n", node->producao.tipoDeFardo.diametro);
+    printf("\tTipo de Feno: %c\n", node->producao.tipoDeFardo.tipoDeFeno);
+    printf("\t\t------\n");
+}
+
+void printAll(List* l) {
     Node* current = l->head;
     if (current == NULL) { printf("\n(!) Nenhuma producao registrada.\n"); return; }
     printf("LISTAGEM:\n");
     while (current != NULL) {
-        printf("\tCodigo: %d\n", current->producao.codigo);
-        printf("\tData: %d/%d/%d\n",
-            current->producao.dataProducao.dia,
-            current->producao.dataProducao.mes,
-            current->producao.dataProducao.ano);
-        printf("\tDuracao: %.2f\n", current->producao.duracao);
-        printf("\tN de Fardos: %d\n", current->producao.qtDeFardos);
-        printf("\tCultivar: %s\n", current->producao.tipoDeFardo.cultivar);
-        printf("\tDiametro: %.2f\n", current->producao.tipoDeFardo.diametro);
-        printf("\tTipo de Feno: %c\n", current->producao.tipoDeFardo.tipoDeFeno);
-        printf("\t\t------\n");
+        printSingle(current);
 
         current = current->next;
     }
 }
 
-void addNode(List* l, Producao p) {
-    Node* new = malloc(sizeof(Node));
-    // printf("%d", p.codigo);
-    // printf("--%x--", l);
-    new->producao = p;
-    // printf("%d", new->producao.codigo);
-    new->previous = NULL;
-    new->next = NULL;
-    if (l->head == NULL) { // se a lista estiver vazia
-        l->head = new;
-        l->tail = new;
-    }
-    else {
-        l->tail->next = new; // aponta o next do último para o novo
-        l->tail = new; // agora o novo é o último
-    }
-}
-
-void newProd(List* l) {
-    Producao newProd;
-    printf("Insira os dados da producao:\n");
-    printf("\tCodigo:");
-    scanf("%d", &newProd.codigo);
-    if (l->head != NULL) { // verifica se o codigo ja existe
-        Node* current = l->head;
-        while (current != NULL)
-        {
-            if (current->producao.codigo == newProd.codigo) { break; }
-            current = current->next;
-        }
-        if (current != NULL) { // se entrar aqui, quer dizer que encontrou
-            printf("(!) Ja existe uma producao com esse codigo.\n");
-            return;
-        }
-    }
-    printf("\tDia:");
-    scanf("%d", &newProd.dataProducao.dia);
-    printf("\tMes:");
-    scanf("%d", &newProd.dataProducao.mes);
-    printf("\tAno:");
-    scanf("%d", &newProd.dataProducao.ano);
-
-    printf("\tDuracao:");
-    scanf("%f", &newProd.duracao);
-    printf("\tQuantidade de fardos:");
-    scanf("%d", &newProd.qtDeFardos);
-
-    printf("\tCultivar:");
-    scanf("%s", &newProd.tipoDeFardo.cultivar);
-    printf("\tDiametro do fardo:");
-    scanf("%f", &newProd.tipoDeFardo.diametro);
-    printf("\tTipo de feno:");
-    scanf("\n%c", &newProd.tipoDeFardo.tipoDeFeno);
-
-    addNode(l, newProd);
-}
-
-void consultar(List* l, int op) {
+void consulta(List* l, int op) {
     if (op != 1 && op != 2) { return; }
     if (op == 1) { // consulta por data
         printf("CONSULTA POR DATA\n");
@@ -150,6 +97,90 @@ void consultar(List* l, int op) {
     }
 }
 
+Node* consultaCodigo(List* l, int key) {
+    Node* current = l->head;
+    if (current == NULL) { return current; } //se a lista estiver vazia nem procura
+    while (current != NULL) {
+        if (current->producao.codigo == key) { break; }// vai sair do loop com o objeto encontrado
+        current = current->next;
+    }
+    return current; // retorna NULL se não tiver encontrado ou o ponteiro do nodo
+}
+
+void addNode(List* l, Producao p) {
+    Node* new = malloc(sizeof(Node));
+    // printf("%d", p.codigo);
+    // printf("--%x--", l);
+    new->producao = p;
+    // printf("%d", new->producao.codigo);
+    new->previous = NULL;
+    new->next = NULL;
+    if (l->head == NULL) { // se a lista estiver vazia
+        l->head = new;
+        l->tail = new;
+    }
+    else {
+        l->tail->next = new; // aponta o next do último para o novo
+        l->tail = new; // agora o novo é o último
+    }
+}
+
+void newProd(List* l, Node* alterar) { // se receber o alterar vai modificar o produto do endereco alterar
+    Producao newProd;
+    printf("Insira os dados da producao:\n");
+    if (alterar == NULL) {
+        printf("\tCodigo:");
+        scanf("%d", &newProd.codigo);
+        Node* found = consultaCodigo(l, newProd.codigo);
+        if (found != NULL) {
+            printf("\n(!) Ja existe uma producao com esse codigo.\n");
+            return;
+        }
+    }
+    else {
+        newProd.codigo = alterar->producao.codigo;
+    }
+
+
+    printf("\tDia:");
+    scanf("%d", &newProd.dataProducao.dia);
+    printf("\tMes:");
+    scanf("%d", &newProd.dataProducao.mes);
+    printf("\tAno:");
+    scanf("%d", &newProd.dataProducao.ano);
+
+    printf("\tDuracao:");
+    scanf("%f", &newProd.duracao);
+    printf("\tQuantidade de fardos:");
+    scanf("%d", &newProd.qtDeFardos);
+
+    printf("\tCultivar:");
+    scanf(" %[^\n]s", &newProd.tipoDeFardo.cultivar); // esse scanf esquisito le a linha toda
+    printf("\tDiametro do fardo:");
+    scanf("%d", &newProd.tipoDeFardo.diametro);
+    printf("\tTipo de feno:");
+    scanf(" %c", &newProd.tipoDeFardo.tipoDeFeno);
+
+    if (alterar == NULL) {
+        addNode(l, newProd);
+        printf("\n\tInserido com sucesso.");
+    }
+    else {
+        Node* edited = consultaCodigo(l, alterar->producao.codigo);
+        edited->producao = newProd;
+        printf("\n\tAlterado com sucesso.\n");
+    }
+}
+
+void alteraProd(List* l, int key) { //vai reutilizar a funcao de newProd
+    Node* found = consultaCodigo(l, key);
+    if (found == NULL) {
+        printf("\n(!) Producao nao encontrada\n");
+        return;
+    }
+    newProd(l, found);
+}
+
 Producao geraProd(int n) { // gera uma prod
     Producao p;
     p.codigo = n;
@@ -162,7 +193,7 @@ Producao geraProd(int n) { // gera uma prod
     p.qtDeFardos = n * 7;
 
     strcpy(p.tipoDeFardo.cultivar, "TesteFenoBagual");
-    p.tipoDeFardo.diametro = 1.5 * (n + 1);
+    p.tipoDeFardo.diametro = 3 * (n + 1);
     p.tipoDeFardo.tipoDeFeno = 'A';
 
     return p;
@@ -172,7 +203,7 @@ int main() {
     List lista;
     initList(&lista);
 
-    for (int i = 0; i < 5; i++) { // popula a lista
+    for (int i = 0; i < 2; i++) { // popula a lista
         Producao p = geraProd(i);
         addNode(&lista, p);
     }
@@ -192,15 +223,20 @@ int main() {
         switch (op)
         {
         case 1:
-            newProd(&lista);
+            newProd(&lista, NULL);
             break;
         case 2:
             printf("Pesquisa por:\n 1. Data\n 2. Cultivar\n>");
             scanf("%d", &op);
-            consultar(&lista, op);
+            consulta(&lista, op);
+            break;
+        case 3:
+            printf("Codigo:");
+            scanf("%d", &op);
+            alteraProd(&lista, op);
             break;
         case 5:
-            printList(&lista);
+            printAll(&lista);
             break;
         case 6:
             return 0;
