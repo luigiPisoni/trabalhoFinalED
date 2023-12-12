@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 // #include "header.h"
 
@@ -94,7 +95,65 @@ void consulta(List* l, int op) {
         }
         if (current == NULL) { printf("(!) Nao ha producao nesse dia."); }
 
+    }else{
+        Node *current = l->head;
+        printf("CONSULTA POR CULTIVO");
+        char cultivo[20];
+        char cultivoLower[20];
+        char currentLower[20];
+        char cultivoCurrent[20];
+        int somaA = 0, somaB = 0, somaC = 0, b = 0, c = 0;
+        printf("\nCultivo para busca: ");
+        scanf("%s", &cultivo);
+        for (int i = 0; i < 20; i++)
+        {
+            cultivoLower[i] = tolower(cultivo[i]);
+        }
+        while (current != NULL)
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                currentLower[i] = tolower(current->producao.tipoDeFardo.cultivar[i]);
+            }
+            int compare = strcmp(currentLower, cultivoLower);
+            if (compare == 0) // cai aqui se o cultivo em lower case for igual ao cultivo cadastrado
+            {
+                strcpy(cultivoCurrent, current->producao.tipoDeFardo.cultivar);
+                if (current->producao.tipoDeFardo.tipoDeFeno == 'A')
+                {
+                    somaA += current->producao.qtDeFardos;
+                }else if (current->producao.tipoDeFardo.tipoDeFeno == 'B')
+                {
+                    somaB += current->producao.qtDeFardos;
+                    b = 1;
+                }else if (current->producao.tipoDeFardo.tipoDeFeno == 'C')
+                {
+                    somaC += current->producao.qtDeFardos;
+                    c = 1;
+                }
+            }
+            current = current->next;
+        }
+        if (somaA != 0)
+        {
+            printf("%s: %c - %d", cultivoCurrent, 'A', somaA);
+        }
+        if (somaB != 0)
+        {
+            if(b == 1) printf("\n");
+            printf("%s: %c - %d", cultivoCurrent, 'B', somaB);
+        }
+        if (somaC != 0)
+        {
+            if(c == 1) printf("\n");
+            printf("%s: %c - %d", cultivoCurrent, 'C', somaC);
+        }
+
+        if(somaA == 0 && somaB == 0 && somaC == 0) printf("(!) Nao foi encontrado Cultivo: %s na lista.", cultivo);
+
+
     }
+    
 }
 
 Node* consultaCodigo(List* l, int key) {
@@ -219,7 +278,7 @@ int main() {
         printf("\t6. Sair\n>");
 
         int op;
-        scanf("%d", &op);
+        scanf(" %d", &op);
         switch (op)
         {
         case 1:
