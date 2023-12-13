@@ -39,7 +39,7 @@ void initList(List* l) {
     l->tail = NULL;
 }
 
-void printSingle(Node* node) {
+void listaUm(Node* node) {
     printf("\tCodigo: %d\n", node->producao.codigo);
     printf("\tData: %d/%d/%d\n",
         node->producao.dataProducao.dia,
@@ -53,12 +53,12 @@ void printSingle(Node* node) {
     printf("\t\t------\n");
 }
 
-void printAll(List* l) {
+void listaTodos(List* l) {
     Node* current = l->head;
     if (current == NULL) { printf("\n(!) Nenhuma producao registrada.\n"); return; }
     printf("LISTAGEM:\n");
     while (current != NULL) {
-        printSingle(current);
+        listaUm(current);
 
         current = current->next;
     }
@@ -107,7 +107,7 @@ Node* consultaCodigo(List* l, int key) {
     return current; // retorna NULL se não tiver encontrado ou o ponteiro do nodo
 }
 
-void addNode(List* l, Producao p) {
+void addNode(List* l, Producao p) { // apenas adiciona um novo nodo na lista
     Node* new = malloc(sizeof(Node));
     // printf("%d", p.codigo);
     // printf("--%x--", l);
@@ -125,7 +125,7 @@ void addNode(List* l, Producao p) {
     }
 }
 
-void newProd(List* l, Node* alterar) { // se receber o alterar vai modificar o produto do endereco alterar
+void novoProd(List* l, Node* alterar) { // se receber o alterar vai modificar o produto do endereco alterar
     Producao newProd;
     printf("Insira os dados da producao:\n");
     if (alterar == NULL) {
@@ -175,13 +175,39 @@ void newProd(List* l, Node* alterar) { // se receber o alterar vai modificar o p
 void alteraProd(List* l, int key) { //vai reutilizar a funcao de newProd
     Node* found = consultaCodigo(l, key);
     if (found == NULL) {
-        printf("\n(!) Producao nao encontrada\n");
+        printf("\n(!) Codigo nao encontrado\n");
         return;
     }
-    newProd(l, found);
+    novoProd(l, found);
 }
 
-Producao geraProd(int n) { // gera uma prod
+void excluiProd(List* l, int key) {
+    Node* found = consultaCodigo(l, key);
+    if (found == NULL) {
+        printf("\n(!) Codigo nao encontrado\n");
+        return;
+    }
+
+    if (found->previous == NULL) { // se for o primeiro
+        found->next->previous == NULL;
+        l->head = found->next;
+        free(found);
+    }
+    else if (found->next == NULL) { // se for o ultimo
+        found->previous->next == NULL;
+        l->tail = found->previous;
+        free(found);
+    }
+    else { // se tiver no meio
+        found->next->previous = found->previous;
+        found->previous->next = found->next;
+        free(found);
+    }
+
+    printf("\nProducao excluida com sucesso\n");
+}
+
+Producao geraProd(int n) { // gera n prod pra teste
     Producao p;
     p.codigo = n;
 
@@ -219,11 +245,11 @@ int main() {
         printf("\t6. Sair\n>");
 
         int op;
-        scanf("%d", &op);
+        scanf(" %d", &op);
         switch (op)
         {
         case 1:
-            newProd(&lista, NULL);
+            novoProd(&lista, NULL);
             break;
         case 2:
             printf("Pesquisa por:\n 1. Data\n 2. Cultivar\n>");
@@ -231,18 +257,23 @@ int main() {
             consulta(&lista, op);
             break;
         case 3:
-            printf("Codigo:");
+            printf("Alterar - Codigo:");
             scanf("%d", &op);
             alteraProd(&lista, op);
             break;
+        case 4:
+            printf("Excluir - Codigo:");
+            scanf("%d", &op);
+            excluiProd(&lista, op);
+            break;
         case 5:
-            printAll(&lista);
+            listaTodos(&lista);
             break;
         case 6:
             return 0;
         default:
             printf("(!) Opcao invalida\n");
-            break;
+            continue;
         }
     }
 }
